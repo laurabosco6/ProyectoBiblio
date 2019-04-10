@@ -2,6 +2,7 @@ package Bibliotecarios;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -63,30 +64,69 @@ public class GestorBibliotecario {
 		GestorBibliotecario.idISBN++;
 	}
 
-	public boolean darDeAlta(BufferedReader in, PrintWriter out, String title) { // Devuelve true cuando se le da de alta
-		
-		if(!existeElLibro(in, title)) {
-			return false;
+	public boolean darDeAlta(BufferedReader in, PrintWriter out, String title) { // Devuelve true cuando se le da de																		// alta
+		PrintWriter out2 = null;
+		boolean noExiste = false;
+
+		try {	//Por si no existe	in
+			File f = new File("libros");
+			if (f.exists()) {
+				in = new BufferedReader(new FileReader("libros"));
+				if (!existeElLibro(in, title)) {
+					noExiste = true;
+				}
+			} else {
+				System.out.println("El fichero no existe, lo creamos");
+				f.createNewFile();
+				noExiste = true;
+			}
+		} catch (IOException e) {
+			System.err.println("Error");
+		} finally {
+			if (in != null) {
+				try {
+					in.close();
+				} catch (IOException e) {
+					System.out.println("Error, " + e.getMessage());
+				}
+			}
+		}
+		if (!noExiste) { 		// Si existe
+			return !noExiste; 	// Devuelve false
 		}
 		
-		try {
+		try{			//Comprueba que existe el isbn
+			File f2 = new File("IDlibros");
+			if(!f2.exists()) {
+				f2.createNewFile();
+				out2 = new PrintWriter(new BufferedWriter(new FileWriter("IDlibros",true)));
+				out2.println(Integer.parseInt("10000")+","+title);
+			out2.close();
+			}
+		}catch (Exception e) {
+			System.err.println("Errrorr");
+		}
+		
+		try {		//Imprime
 			out = new PrintWriter(new BufferedWriter(new FileWriter("libros",true)));
-			int isbnEs=idISBN;
+			BufferedReader in2 = new BufferedReader(new FileReader("IDlibros"));
+			
+			String id,ultimo = null;
+			while((id = in2.readLine())!=null) {
+				ultimo=id;
+			}
+			
+			in2.close();
+			
+			int isbnEs=Integer.parseInt(ultimo.substring(0, ultimo.indexOf(",")))+1;
 			String autorEs=GestorBibliotecario.nombres()+" "+GestorBibliotecario.apellidos();
 			String tituloEs=title;
 			boolean prestadoEs=false;
 			String fechaEs = "NO";
-			/*
-			String fechaEs = fecha.toString();				// yyyy-mm-dd
-			String dia, mes, anno;
-			dia=fechaEs.substring(fechaEs.indexOf("-")+1);	// mm-dd
-			dia=dia.substring(dia.indexOf("-")+1);				// dd
-			mes=fechaEs.substring(fechaEs.indexOf("-")+1);	// mm-dd
-			mes=mes.substring(0, mes.indexOf("-")+1);			// mm
-			anno=fechaEs.substring(0, fechaEs.indexOf("-"));	// yyyy
-			*/
+			
 			out.println(isbnEs+","+tituloEs+","+autorEs+","+prestadoEs+","+fechaEs);
-			this.sumaidISBN();
+			
+			
 		} catch (FileNotFoundException e) {
 			System.err.println("Fichero no encontrado!");
 		}catch (IOException f) {
@@ -99,8 +139,21 @@ public class GestorBibliotecario {
 					System.out.println("Error, " + e.getMessage());
 				}
 			}
+			if (out != null) {
+				out.close();
+			}
 		}
-		return true;
+		
+		try{			// Para aumentar el isbn
+			out2 = new PrintWriter(new BufferedWriter(new FileWriter("IDlibros",true)));
+			out2.println();
+		}catch (Exception e) {
+			System.err.println("Errrorr");
+		}finally {
+			out2.close();
+		}
+		
+		return noExiste;
 	}
 	
 	public boolean darDeBaja(BufferedReader in, PrintWriter out, String title) {
@@ -262,105 +315,81 @@ public class GestorBibliotecario {
 		String c, linea, titulo;
 		boolean encontrado=false;
 		String principioLinea3, principioLinea4;
-		int numEjemplares = 0;
 		
-		try {
-			out = new PrintWriter(new BufferedWriter(new FileWriter("libros",true)));
-			in = new BufferedReader(new FileReader("libros"));
-			numEjemplares = contarEjemplares(in, tituloPedido);
-			
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		int numEjemplares = contarEjemplares(in, out, tituloPedido);
 		
+		if (numEjemplares!=0) {
 		
-		try {
-			
-			if (numEjemplares!=0) {
-			
-				out = new PrintWriter(new BufferedWriter(new FileWriter("libros",true)));
+			try {
 				in = new BufferedReader(new FileReader("libros"));
+				out = new PrintWriter(new BufferedWriter(new FileWriter("libros")));
 				
-				while ((c = in.readLine())!=null && !encontrado) {		// c = 		isbn , titulo , autor , prestado , fecha
-					linea = c.substring(c.indexOf(',')+1);				// linea =	titulo , autor , prestado , fecha
-					titulo = linea.substring(0, linea.indexOf(','));	// titulo =	titulo
-					if (titulo.equalsIgnoreCase(tituloPedido)) {
+				while ((c = in.readLine())!=null) {						// c = 		isbn , titulo , autor , prestado , fecha
+					while (encontrado) {
+						linea = c.substring(c.charAt(',')+1);			// linea =	titulo , autor , prestado , fecha
+						titulo = linea.substring(0, linea.charAt(','));	// titulo =	titulo
 						principioLinea4 = c.substring(0,c.lastIndexOf(','));
 						principioLinea3 = principioLinea4.substring(0,principioLinea4.lastIndexOf(','));
-						for (int i=0;i<numAumento;i++) {
-							out.println(principioLinea3+","+false+",NO");
-							encontrado = true;
+						if (titulo.equalsIgnoreCase(tituloPedido)) {
+							for (int i=0;i<numAumento;i++) {
+								out.println(principioLinea3+","+false+"NO");
+								encontrado = true;
+							}
 						}
 					}
 				}
 				
-			} else {
-				System.out.println("No se ha encontrado el libro");
-			}
-			
-		} catch (FileNotFoundException e) {
-			System.out.println("No existe ningun libro");
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (in!=null) {
-				try {
-					in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				System.out.println("No existe ningun libro");
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (in!=null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+				if (out!=null) {
+					out.close();
 				}
 			}
-			if (out!=null) {
-				out.close();
-			}
+		} else {
+			System.out.println("No se ha encontrado el libro");
 		}
+	}
 	
-}
-	
-public void disminuirEjemplares(BufferedReader in, PrintWriter out, String tituloPedido, int numDisminuciones) {
-	
-	int numEjemplares = 0;
-	
-	try {
-		in = new BufferedReader(new FileReader("libros"));
-		numEjemplares = contarEjemplares(in, tituloPedido);
+	public void disminuirEjemplares(BufferedReader in, PrintWriter out, String tituloPedido, int numDisminuciones) {
 		
-	} catch (FileNotFoundException e1) {
-		e1.printStackTrace();
-	}	
-	
-	try {
+		int numEjemplares = contarEjemplares(in, out, tituloPedido);
 		
 		if (numEjemplares!=0) {
-		
-			out = new PrintWriter(new BufferedWriter(new FileWriter("librosTemporal",true)));
-			in = new BufferedReader(new FileReader("libros"));
 			
 			String c, linea, titulo, principioLinea4, prestado;
 			int contador = 0;
 			
-			while ((c = in.readLine())!=null) {						// c = 		isbn , titulo , autor , prestado , fecha
-				linea = c.substring(c.indexOf(',')+1);				// linea =	titulo , autor , prestado , fecha
-				titulo = linea.substring(0, linea.indexOf(','));	// titulo =	titulo
-				if (titulo.equalsIgnoreCase(tituloPedido) && (contador<numDisminuciones)) {
+			try {
+				in = new BufferedReader(new FileReader("libros"));
+				out = new PrintWriter(new BufferedWriter(new FileWriter("librosTemporal")));
+				while ((c = in.readLine())!=null) {					// c = 		isbn , titulo , autor , prestado , fecha
+					linea = c.substring(c.charAt(',')+1);			// linea =	titulo , autor , prestado , fecha
+					titulo = linea.substring(0, linea.charAt(','));	// titulo =	titulo
 					principioLinea4 = c.substring(0,c.lastIndexOf(','));
 					prestado = principioLinea4.substring(principioLinea4.lastIndexOf(',')+1);
-					if (prestado.equalsIgnoreCase("true")) {
-						out.println(c);
-					} else {
-						contador++;
+					while (contador<numDisminuciones) {
+						if (titulo.equalsIgnoreCase(tituloPedido)) {
+							if (prestado.equalsIgnoreCase("true")) {
+								out.println(c);
+							} else {
+								contador++;
+							}
+						} else {
+							out.println(c);
+						}
 					}
-				} else {
-					out.println(c);
+					out.println();
 				}
-			}
-			
-		} else {
-			System.out.println("No se ha encontrado el libro");
-		}
-				
 			} catch (FileNotFoundException e) {
 				System.out.println("No existe ningun libro");
 			} catch (IOException e) {
@@ -378,23 +407,27 @@ public void disminuirEjemplares(BufferedReader in, PrintWriter out, String titul
 				}
 			}
 			
-				Path partida = FileSystems.getDefault().getPath("librosTemporal");
-				Path destino = FileSystems.getDefault().getPath("libros");
-				try {
-					Files.move(partida, destino, StandardCopyOption.REPLACE_EXISTING);
-				} catch (IOException e) {
-				System.out.println("Errrooooorrr"+e.getMessage());
+			Path partida = FileSystems.getDefault().getPath("librosTemporal");
+			Path destino = FileSystems.getDefault().getPath("libros");
+			try {
+				Files.move(partida, destino, StandardCopyOption.REPLACE_EXISTING);
+			} catch (Exception e) {
+				
 			}
 			
+		} else {
+			System.out.println("No se ha encontrado el libro");
 		}
+		
+	}
 	
-	public int contarEjemplares(BufferedReader in, String tituloPedido) {
+	public int contarEjemplares(BufferedReader in, PrintWriter out, String tituloPedido) {
 		int numEjemplares=0;
 		String c, linea, titulo;
 		try {
 			while ((c = in.readLine())!=null) {				// c = 		isbn , titulo , autor , prestado , fecha
-				linea = c.substring(c.indexOf(',')+1);		// linea =	titulo , autor , prestado , fecha
-				titulo = linea.substring(0, linea.indexOf(','));	// titulo =	titulo
+				linea = c.substring(c.charAt(',')+1);		// linea =	titulo , autor , prestado , fecha
+				titulo = linea.substring(0, c.charAt(','));	// titulo =	titulo
 				if (titulo.equalsIgnoreCase(tituloPedido)) {
 					numEjemplares++;
 				}
@@ -406,3 +439,4 @@ public void disminuirEjemplares(BufferedReader in, PrintWriter out, String titul
 	}
 
 }
+
