@@ -34,14 +34,14 @@ public class Usuario {
 			if (pasword.length() > 15) {
 				bFormado = false;
 			}
-		} while (!bFormado);
-
-		while (!inicio) {
-			if (user.iniciarSesion(r, usuario, pasword)) {
-				inicio = true;
+			inicio = user.iniciarSesion(r, usuario, pasword);
+			
+			if (!inicio) {
+				System.err.println("Error de autenticacion");
+				System.out.println("");
 			}
-		}
-		
+		} while (!bFormado || !inicio);
+
 		System.out.println("(1) Cojer un libro en prestamo");
 		System.out.println("(2) Devolver un libro prestado");
 		System.out.println("(3) Listar libro por titulo");

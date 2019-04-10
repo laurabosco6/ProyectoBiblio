@@ -175,28 +175,39 @@ public class GestorUsuario {
 
 	public boolean iniciarSesion(RandomAccessFile r, String usuario, String contrasena) {
 		boolean inicioSesion=false;
-		
-		while(usuario.length()<15) {
-			usuario+="$";
-		}
-		while(contrasena.length()<15) {
-			contrasena+="$";
-		}
 
 		try {
 			r = new RandomAccessFile("usuarios", "r");
-			String user, pass;
+			String user="", pass = "";
 			
 			for (int i = 0; i < r.length() && !inicioSesion; i++) {
-				r.seek((i*38));
+				r.seek((i*64));
 				if(r.readInt()==3) {								// Para saber si es usuario comun
-					r.seek((i*38)+4);
-					user=r.readUTF();
-					user=user.substring(0, user.indexOf("$"));		// Quito los dolars
+					
+					r.seek((i*64)+4);
+					
+					for (int j=0;j<15;j++) {
+						user+=r.readChar();
+					}
+					
+					try {
+						user=user.substring(0, user.indexOf("$"));		// Quito los dolars
+					} catch (Exception e) {
+						
+					}
+					
 					if(usuario.equals(user)) {						// Leo el usuario y lo comparo
-						r.seek((i*38)+21);
-						pass=r.readUTF();
-						pass=pass.substring(0, pass.indexOf("$"));	// Quito los dolars
+						r.seek((i*64)+34);
+						
+						for (int j=0;j<15;j++) {
+							pass+=r.readChar();
+						}
+						try {
+							pass=pass.substring(0, pass.indexOf("$"));	// Quito los dolars
+						} catch (Exception e) {
+							
+						}
+						
 						if(contrasena.equals(pass)) {				// Leo la contrasena y la comparo
 							inicioSesion=true;
 						}
