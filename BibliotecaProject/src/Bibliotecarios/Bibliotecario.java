@@ -20,28 +20,34 @@ public class Bibliotecario {
 			System.out.println("(3) Modificar el titulo de un libro");
 			System.out.println("(4) Aumentar el numero de ejemplares");
 			System.out.println("(5) Disminuir el numero de ejemplares");
+			System.out.println("(6) Terminar el programa");
 			opcion = Integer.parseInt(teclado.nextLine());
 			switch (opcion) {
 			case 1:
-				System.out.println("Introduce el tÃ­tulo del libro que quieras dar de alta");
+				System.out.println("Introduce el título del libro que quieras dar de alta");
 				titulo=teclado.nextLine();
-				if(gestionar.darDeAlta(in, out, titulo)) {
+				int deAlta=gestionar.darDeAlta(in, out, titulo, teclado);
+				if(deAlta==1) {
 					System.out.println("El libro "+titulo+" ya se ha dado de alta");
+				}else if(deAlta==2) {
+					System.out.println("El libro ya ha sido dado de alta antes");
 				}else {
-					System.out.println("El libro ya ha sido dado de alta antes o el fichero no esta creado");
+					opcion=6;
 				}
+				System.out.println();
 				break;
 			case 2:
-				System.out.println("Introduce el tÃ­tulo del libro");
+				System.out.println("Introduce el título del libro");
 				titulo=teclado.nextLine();
 				if(gestionar.darDeBaja(in, out, titulo)){
 					System.out.println("El libro se ha dado de baja");
 				}else {
-					System.out.println("El libro no existe por lo que no se ha dado de baja");
+					System.out.println("El libro no se ha dado de baja");
 				}
+				System.out.println();
 				break;
 			case 3:
-				System.out.println("Introduce el tÃ­tulo del libro a cambiar");
+				System.out.println("Introduce el título del libro a cambiar");
 				titulo=teclado.nextLine();
 				System.out.println("Introduce el titulo por el que lo quieras cambiar");
 				tituloNuevo=teclado.nextLine();
@@ -51,21 +57,25 @@ public class Bibliotecario {
 					System.out.println("El titulo no se ha modificado");
 					System.out.println("Comprueba si esta bien escrito");
 				}
+				System.out.println();
 				break;
 			case 4:
-				System.out.println("Introduce el tÃ­tulo del libro");
+				System.out.println("Introduce el título del libro");
 				titulo=teclado.nextLine();
-				System.out.println("Introduce el nÃºmero de ejemplares que quieras aumentar");
+				System.out.println("Introduce el número de ejemplares que quieras aumentar");
 				ejemplares=Integer.parseInt(teclado.nextLine());
 				gestionar.aumentarEjemplares(in,out,titulo,ejemplares);
+				System.out.println();
 				break;
 			case 5:
-				System.out.println("Introduce el tÃ­tulo del libro");
+				System.out.println("Introduce el título del libro");
 				titulo=teclado.nextLine();
-				System.out.println("Introduce el nÃºmero de ejemplares que quieras disminuir");
+				System.out.println("Introduce el número de ejemplares que quieras disminuir");
 				ejemplares=Integer.parseInt(teclado.nextLine());
 				gestionar.disminuirEjemplares(in,out,titulo,ejemplares);
+				System.out.println();
 				break;
+			case 6:
 			}
 		}
 		
