@@ -43,6 +43,7 @@ public class Bibliotecario {
 		} while (!bFormado || !inicio);
 		
 		while(opcion!=6) {
+			System.out.println("");
 			System.out.println("(1) Dar de alta un libro");
 			System.out.println("(2) Dar de baja un libro");
 			System.out.println("(3) Modificar el titulo de un libro");

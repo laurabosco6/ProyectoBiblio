@@ -1,5 +1,6 @@
 package Administradores;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.file.FileSystems;
@@ -14,6 +15,66 @@ public class GestorAdministrador {
 	* 2. Dar de baja usuario
 	*/
 	
+	public boolean iniciarSesion(RandomAccessFile r, String usuario, String contrasena) {
+		boolean inicioSesion=false;
+
+		try {
+			r = new RandomAccessFile("usuarios", "r");
+			String user="", pass = "";
+			
+			for (int i = 0; i < r.length() && !inicioSesion; i++) {
+				r.seek((i*64));
+				if(r.readInt()==1) {								// Para saber si es administrador
+					
+					r.seek((i*64)+4);
+					
+					for (int j=0;j<15;j++) {
+						user+=r.readChar();
+					}
+					
+					try {
+						user=user.substring(0, user.indexOf("$"));		// Quito los dolars
+					} catch (Exception e) {
+						
+					}
+					
+					if(usuario.equals(user)) {						// Leo el usuario y lo comparo
+						r.seek((i*64)+34);
+						
+						for (int j=0;j<15;j++) {
+							pass+=r.readChar();
+						}
+						try {
+							pass=pass.substring(0, pass.indexOf("$"));	// Quito los dolars
+						} catch (Exception e) {
+							
+						}
+						
+						if(contrasena.equals(pass)) {				// Leo la contrasena y la comparo
+							inicioSesion=true;
+						}
+					}
+					
+				}
+				
+			}
+			
+		}catch (FileNotFoundException e) {
+			System.err.println("Este fichero no existe");
+		}catch (IOException e) {
+			System.out.println();
+		}finally {
+			if(r!=null) {
+				try {
+					r.close();
+				} catch (IOException e) {
+					System.out.println("Error, "+e.getMessage());
+				}
+			}
+		}
+		
+		return inicioSesion;
+	}
 	
 	public void darAltaUsuario(Scanner teclado) {
 		RandomAccessFile r = null;
