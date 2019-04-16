@@ -28,7 +28,7 @@ public class Bibliotecario {
 				titulo=teclado.nextLine();
 				int deAlta=gestionar.darDeAlta(in, out, titulo, teclado);
 				if(deAlta==1) {
-					System.out.println("El libro "+titulo+" ya se ha dado de alta");
+					System.out.println("El libro "+titulo+" se ha dado de alta");
 				}else if(deAlta==2) {
 					System.out.println("El libro ya ha sido dado de alta antes");
 				}else {
