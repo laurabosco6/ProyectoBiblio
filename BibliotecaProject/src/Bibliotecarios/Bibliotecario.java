@@ -2,6 +2,7 @@ package Bibliotecarios;
 
 import java.io.BufferedReader;
 import java.io.PrintWriter;
+import java.io.RandomAccessFile;
 import java.util.Scanner;
 
 public class Bibliotecario {
@@ -9,10 +10,37 @@ public class Bibliotecario {
 	public static void main(String[] args) {
 		Scanner teclado = new Scanner(System.in);
 		int opcion=0, ejemplares;
-		String titulo, tituloNuevo;
+		String usuario, password, titulo, tituloNuevo;
 		GestorBibliotecario gestionar = new GestorBibliotecario();
 		BufferedReader in = null;
 		PrintWriter out = null;
+		RandomAccessFile r = null;
+		boolean bFormado=true, inicio=false;
+		
+		System.out.println(" _________________");
+		System.out.println(" |                |");
+		System.out.println(" | INICIAR SESION |");
+		System.out.println(" |________________|");
+		System.out.println();
+
+		do {
+			System.out.print(" Usuario: ");
+			usuario = teclado.nextLine();
+			if (usuario.length() > 15) {
+				bFormado = false;
+			}
+			System.out.print(" Contrasenya: ");
+			password = teclado.nextLine();
+			if (password.length() > 15) {
+				bFormado = false;
+			}
+			inicio = gestionar.iniciarSesion(r, usuario, password);
+			
+			if (!inicio) {
+				System.err.println("Error de autenticacion");
+				System.out.println("");
+			}
+		} while (!bFormado || !inicio);
 		
 		while(opcion!=6) {
 			System.out.println("(1) Dar de alta un libro");
